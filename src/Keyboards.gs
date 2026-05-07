@@ -26,7 +26,13 @@ function kbSizes(productId, sizes) {
   var row = sizes.map(function(s) {
     return { text: s, callback_data: 'size:' + productId + ':' + s };
   });
-  return { inline_keyboard: [row, [{ text: '← Назад', callback_data: 'cat:back' }]] };
+  return { inline_keyboard: [row, [{ text: '← В каталог', callback_data: 'cat:back' }]] };
+}
+
+function kbRetryPayment(orderId) {
+  return { inline_keyboard: [
+    [{ text: '🔁 Повторить оплату', callback_data: 'pay:retry:' + orderId }]
+  ]};
 }
 
 function kbQuantity() {

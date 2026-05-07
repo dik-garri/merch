@@ -1,29 +1,33 @@
-function generateOrderId() {
-  var sheet = getSheet('Orders');
-  var n = sheet.getLastRow();
-  return 'ORD-' + String(n).padStart(5, '0');
-}
-
 function createOrder(chatId, contact) {
   var items = cartItemsExpanded(chatId);
   if (items.length === 0) throw new Error('Cart is empty');
   var total = items.reduce(function(s, it) { return s + it.subtotal; }, 0);
-  var orderId = generateOrderId();
   var ts = nowISO();
-  appendObject(getSheet('Orders'), {
-    order_id: orderId,
-    chat_id: chatId,
-    name: contact.name,
-    phone: contact.phone,
-    address: contact.address,
-    comment: contact.comment || '',
-    items_json: JSON.stringify(items),
-    total: total,
-    status: 'awaiting_payment',
-    receipt_file_id: '',
-    created_at: ts,
-    updated_at: ts
-  });
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  var orderId;
+  try {
+    var sheet = getSheet('Orders');
+    orderId = 'ORD-' + String(sheet.getLastRow()).padStart(5, '0');
+    appendObject(sheet, {
+      order_id: orderId,
+      chat_id: chatId,
+      name: contact.name,
+      phone: contact.phone,
+      address: contact.address,
+      comment: contact.comment || '',
+      items_json: JSON.stringify(items),
+      total: total,
+      status: 'awaiting_payment',
+      receipt_file_id: '',
+      reject_reason: '',
+      created_at: ts,
+      updated_at: ts
+    });
+  } finally {
+    lock.releaseLock();
+  }
   clearCart(chatId);
   return { order_id: orderId, total: total, items: items };
 }

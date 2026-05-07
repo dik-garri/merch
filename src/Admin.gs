@@ -39,9 +39,9 @@ function adminApprove(orderId, callbackId) {
   }
 }
 
-function adminAskRejectReason(orderId, callbackId, adminMsgChatId, adminMsgId) {
+function adminAskRejectReason(orderId, callbackId) {
   tgAnswerCallback(callbackId, 'Выберите причину');
-  tgSendMessage(adminMsgChatId, 'Причина отклонения для ' + escapeHtml(orderId) + ':', {
+  tgSendMessage(adminChatId(), 'Причина отклонения для ' + escapeHtml(orderId) + ':', {
     reply_markup: kbAdminRejectReasons(orderId)
   });
 }
@@ -65,12 +65,12 @@ function adminReject(orderId, code, callbackId) {
 }
 
 function finalizeReject(orderId, reason) {
-  updateOrderStatus(orderId, 'rejected', { comment: reason });
+  updateOrderStatus(orderId, 'rejected', { reject_reason: reason });
   var o = getOrder(orderId);
   if (o) {
     tgSendMessage(o.chat_id,
-      '❌ Оплата не подтверждена: ' + escapeHtml(reason) + '.\nИспользуйте /start чтобы попробовать снова.',
-      { reply_markup: kbMainMenu() });
+      '❌ Оплата не подтверждена: ' + escapeHtml(reason) + '.\n\nВы можете попробовать оплатить снова:',
+      { reply_markup: kbRetryPayment(orderId) });
   }
   tgSendMessage(adminChatId(), 'Заказ ' + escapeHtml(orderId) + ' отклонён: ' + escapeHtml(reason));
 }

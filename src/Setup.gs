@@ -12,7 +12,8 @@ function setupSheets() {
   ensure('Products',   ['id', 'category', 'title', 'description', 'sizes', 'price', 'drive_file_id', 'active']);
   ensure('Carts',      ['chat_id', 'product_id', 'size', 'qty', 'added_at']);
   ensure('Orders',     ['order_id', 'chat_id', 'name', 'phone', 'address', 'comment',
-                        'items_json', 'total', 'status', 'receipt_file_id', 'created_at', 'updated_at']);
+                        'items_json', 'total', 'status', 'receipt_file_id', 'reject_reason',
+                        'created_at', 'updated_at']);
   ensure('Users',      ['chat_id', 'username', 'first_name', 'last_seen']);
   ensure('Logs',       ['ts', 'level', 'action', 'message', 'meta_json']);
 

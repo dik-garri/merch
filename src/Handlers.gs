@@ -166,7 +166,7 @@ function handleCallback(cb) {
       case 'qty':   return cbQty(chatId, parts[1], cb);
       case 'cart':  return cbCart(chatId, parts[1], cb);
       case 'order': return cbOrder(chatId, parts[1], cb);
-      case 'pay':   return cbPay(chatId, parts[1], cb);
+      case 'pay':   return cbPay(chatId, parts.slice(1), cb);
       case 'admin': return cbAdmin(chatId, parts.slice(1), cb);
       default: tgAnswerCallback(cb.id);
     }
@@ -206,7 +206,7 @@ function cbProduct(chatId, productId, cb) {
 
 function cbSize(chatId, productId, size, cb) {
   tgAnswerCallback(cb.id);
-  patchStateData(chatId, { product_id: productId, size: size });
+  setState(chatId, STATES.CHOOSING_QTY, { product_id: productId, size: size });
   tgSendMessage(chatId, 'Сколько штук?', { reply_markup: kbQuantity() });
 }
 
@@ -216,10 +216,13 @@ function cbQty(chatId, qtyStr, cb) {
     tgAnswerCallback(cb.id, 'Отменено');
     return tgSendMessage(chatId, 'Главное меню:', { reply_markup: kbMainMenu() });
   }
+  var state = getState(chatId);
+  if (state.name !== STATES.CHOOSING_QTY || !state.data.product_id) {
+    tgAnswerCallback(cb.id, 'Сначала выберите товар', true);
+    return;
+  }
   var qty = Number(qtyStr);
-  var d = getState(chatId).data;
-  if (!d.product_id) { tgAnswerCallback(cb.id, 'Сначала выберите товар', true); return; }
-  addToCart(chatId, d.product_id, d.size || '-', qty);
+  addToCart(chatId, state.data.product_id, state.data.size || '-', qty);
   clearState(chatId);
   tgAnswerCallback(cb.id, 'Добавлено в корзину ✅');
   tgSendMessage(chatId, '✅ Добавлено. ' + formatCart(chatId), { reply_markup: kbCart() });
@@ -254,6 +257,12 @@ function cbOrder(chatId, action, cb) {
       tgAnswerCallback(cb.id, 'Не все данные собраны', true);
       return;
     }
+    if (cartItemsExpanded(chatId).length === 0) {
+      tgAnswerCallback(cb.id);
+      clearState(chatId);
+      tgSendMessage(chatId, 'Корзина пуста — заказ не создан.', { reply_markup: kbMainMenu() });
+      return;
+    }
     var result = createOrder(chatId, d);
     setState(chatId, STATES.AWAITING_PAYMENT, { order_id: result.order_id });
     tgAnswerCallback(cb.id, 'Заказ создан');
@@ -262,7 +271,9 @@ function cbOrder(chatId, action, cb) {
   }
 }
 
-function cbPay(chatId, action, cb) {
+function cbPay(chatId, parts, cb) {
+  // pay:done | pay:retry:<order_id>
+  var action = parts[0];
   if (action === 'done') {
     var s = getState(chatId);
     if (s.name !== STATES.AWAITING_PAYMENT) {
@@ -272,18 +283,32 @@ function cbPay(chatId, action, cb) {
     setState(chatId, STATES.AWAITING_RECEIPT, s.data);
     tgAnswerCallback(cb.id);
     tgSendMessage(chatId, '🧾 Пришлите фото/скриншот чека одним сообщением.');
+    return;
+  }
+  if (action === 'retry') {
+    var orderId = parts[1];
+    var o = getOrder(orderId);
+    if (!o || String(o.chat_id) !== String(chatId)) {
+      tgAnswerCallback(cb.id, 'Заказ не найден', true);
+      return;
+    }
+    updateOrderStatus(orderId, 'awaiting_payment', { reject_reason: '' });
+    setState(chatId, STATES.AWAITING_PAYMENT, { order_id: orderId });
+    tgAnswerCallback(cb.id);
+    showPaymentInstructions(chatId, orderId);
   }
 }
 
 function cbAdmin(chatId, parts, cb) {
-  if (String(chatId) !== String(adminChatId())) {
+  var fromId = cb.from && cb.from.id;
+  if (String(fromId) !== String(adminChatId())) {
     tgAnswerCallback(cb.id, 'Недоступно', true);
     return;
   }
   var action = parts[0];
   var orderId = parts[1];
   if (action === 'approve') return adminApprove(orderId, cb.id);
-  if (action === 'reject')  return adminAskRejectReason(orderId, cb.id, chatId, cb.message.message_id);
+  if (action === 'reject')  return adminAskRejectReason(orderId, cb.id);
   if (action === 'reason')  return adminReject(orderId, parts[2], cb.id);
   tgAnswerCallback(cb.id);
 }
