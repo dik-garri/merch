@@ -6,7 +6,7 @@ function notifyAdminOrderCreated(orderId) {
   tgSendMessage(aid, '📥 Заказ создан, ждём чека: <b>' + escapeHtml(orderId) + '</b>');
 }
 
-function notifyAdminPendingReview(orderId, receiptFileId) {
+function notifyAdminPendingReview(orderId, receiptFileId, receiptKind) {
   var aid = adminChatId();
   if (!aid) return;
   var o = getOrder(orderId);
@@ -23,9 +23,13 @@ function notifyAdminPendingReview(orderId, receiptFileId) {
                 '\nПозиции:\n' + lines.join('\n') +
                 '\n\n<b>Итого: ' + formatMoney(o.total) + '</b>';
   tgSendMessage(aid, summary);
-  tgSendPhoto(aid, receiptFileId, '🧾 Чек по заказу ' + escapeHtml(o.order_id), {
-    reply_markup: kbAdminReview(o.order_id)
-  });
+  var caption = '🧾 Чек по заказу ' + escapeHtml(o.order_id);
+  var opts = { reply_markup: kbAdminReview(o.order_id) };
+  if (receiptKind === 'document') {
+    tgSendDocument(aid, receiptFileId, caption, opts);
+  } else {
+    tgSendPhoto(aid, receiptFileId, caption, opts);
+  }
 }
 
 function adminApprove(orderId, callbackId) {

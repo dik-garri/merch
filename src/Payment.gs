@@ -18,7 +18,7 @@ function showPaymentInstructions(chatId, orderId) {
   tgSendMessage(chatId, text, { reply_markup: kbPaymentDone() });
 }
 
-function handleReceipt(chatId, photoFileId, messageId) {
+function handleReceipt(chatId, fileId, kind) {
   var state = getState(chatId);
   if (state.name !== STATES.AWAITING_RECEIPT) {
     tgSendMessage(chatId, 'Сейчас не ожидается чек. Используйте /start.');
@@ -30,10 +30,10 @@ function handleReceipt(chatId, photoFileId, messageId) {
     clearState(chatId);
     return;
   }
-  updateOrderStatus(orderId, 'pending_review', { receipt_file_id: photoFileId });
+  updateOrderStatus(orderId, 'pending_review', { receipt_file_id: fileId, receipt_kind: kind });
   tgSendMessage(chatId,
     '✅ Чек получен. Мы проверим оплату и свяжемся с вами. Заказ <b>' + escapeHtml(orderId) + '</b>.',
     { reply_markup: kbMainMenu() });
   clearState(chatId);
-  notifyAdminPendingReview(orderId, photoFileId);
+  notifyAdminPendingReview(orderId, fileId, kind);
 }

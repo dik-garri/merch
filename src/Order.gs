@@ -21,6 +21,7 @@ function createOrder(chatId, contact) {
       total: total,
       status: 'awaiting_payment',
       receipt_file_id: '',
+      receipt_kind: '',
       reject_reason: '',
       created_at: ts,
       updated_at: ts

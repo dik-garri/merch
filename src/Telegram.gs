@@ -58,6 +58,13 @@ function tgAnswerCallback(callbackId, text, alert) {
   return tgRequest('answerCallbackQuery', p);
 }
 
+function tgSendDocument(chatId, document, caption, opts) {
+  var p = { chat_id: chatId, document: document, parse_mode: 'HTML' };
+  if (caption) p.caption = caption;
+  if (opts && opts.reply_markup) p.reply_markup = opts.reply_markup;
+  return tgRequest('sendDocument', p);
+}
+
 function tgGetFile(fileId) {
   return tgRequest('getFile', { file_id: fileId });
 }

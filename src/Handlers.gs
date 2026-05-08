@@ -4,7 +4,11 @@ function handleMessage(msg) {
 
   if (msg.photo && msg.photo.length > 0) {
     var bestPhoto = msg.photo[msg.photo.length - 1];
-    handleReceipt(chatId, bestPhoto.file_id, msg.message_id);
+    handleReceipt(chatId, bestPhoto.file_id, 'photo');
+    return;
+  }
+  if (msg.document) {
+    handleReceipt(chatId, msg.document.file_id, 'document');
     return;
   }
 
