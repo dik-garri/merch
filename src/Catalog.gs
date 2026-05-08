@@ -26,23 +26,39 @@ function productSizes(product) {
     .filter(function(s) { return s && s !== '-'; });
 }
 
-function productPhotoBlob(product) {
-  if (!product.drive_file_id) return null;
-  try {
-    return DriveApp.getFileById(product.drive_file_id).getBlob();
-  } catch (e) {
-    logEvent('error', 'photo_load', String(e), { product_id: product.id });
-    return null;
-  }
+function productPhotoIds(product) {
+  return String(product.drive_file_id || '')
+    .split(',')
+    .map(function(s) { return s.trim(); })
+    .filter(Boolean);
+}
+
+function productPhotoBlobs(product) {
+  var blobs = [];
+  productPhotoIds(product).forEach(function(id) {
+    try {
+      blobs.push(DriveApp.getFileById(id).getBlob());
+    } catch (e) {
+      logEvent('error', 'photo_load', String(e), { product_id: product.id, file_id: id });
+    }
+  });
+  // Telegram media group limit is 10
+  return blobs.slice(0, 10);
 }
 
 function sendProductCard(chatId, product) {
   var caption = '<b>' + escapeHtml(product.title) + '</b>\n' +
                 (product.description ? escapeHtml(product.description) + '\n' : '') +
                 '💰 ' + formatMoney(product.price);
-  var blob = productPhotoBlob(product);
-  if (blob) {
-    return tgSendPhoto(chatId, blob, caption, { reply_markup: kbProductCard(product.id) });
+  var blobs = productPhotoBlobs(product);
+  if (blobs.length >= 2) {
+    tgSendMediaGroup(chatId, blobs, caption);
+    // Album doesn't support inline buttons — send selector as a follow-up message
+    tgSendMessage(chatId, '👆 ' + escapeHtml(product.title), { reply_markup: kbProductCard(product.id) });
+    return;
+  }
+  if (blobs.length === 1) {
+    return tgSendPhoto(chatId, blobs[0], caption, { reply_markup: kbProductCard(product.id) });
   }
   return tgSendMessage(chatId, caption, { reply_markup: kbProductCard(product.id) });
 }

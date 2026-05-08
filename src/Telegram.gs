@@ -58,6 +58,22 @@ function tgAnswerCallback(callbackId, text, alert) {
   return tgRequest('answerCallbackQuery', p);
 }
 
+function tgSendMediaGroup(chatId, photoBlobs, caption) {
+  // Sends 2-10 photos as an album. Caption is attached to the first photo.
+  var media = photoBlobs.map(function(blob, i) {
+    var name = 'photo' + i;
+    var item = { type: 'photo', media: 'attach://' + name };
+    if (i === 0 && caption) {
+      item.caption = caption;
+      item.parse_mode = 'HTML';
+    }
+    return item;
+  });
+  var form = { chat_id: String(chatId), media: JSON.stringify(media) };
+  photoBlobs.forEach(function(blob, i) { form['photo' + i] = blob; });
+  return tgRequest('sendMediaGroup', form, true);
+}
+
 function tgSendDocument(chatId, document, caption, opts) {
   var p = { chat_id: chatId, document: document, parse_mode: 'HTML' };
   if (caption) p.caption = caption;

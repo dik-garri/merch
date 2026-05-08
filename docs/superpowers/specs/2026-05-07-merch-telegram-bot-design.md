@@ -191,7 +191,7 @@ src/
 
 ## 8.1. Хранение файлов
 
-- **Фото товаров** — Google Drive (ID файла в `Products.drive_file_id`). Скачиваются ботом через `DriveApp.getFileById(id).getBlob()` и отправляются как multipart upload (Telegram кеширует файл и при повторных отправках использует кеш).
+- **Фото товаров** — Google Drive (ID файла в `Products.drive_file_id`). Скачиваются ботом через `DriveApp.getFileById(id).getBlob()` и отправляются как multipart upload. Несколько ID через запятую = альбом (до 10, лимит Telegram media group); 1 ID = одиночное фото с инлайн-кнопкой; 0 ID = текстовая карточка.
 - **Чеки оплаты** — **только Telegram CDN**. В `Orders.receipt_file_id` хранится `file_id`, сам файл лежит у Telegram. Нет копий в Drive/Sheets — клиент берёт чек по `file_id` через `getFile` API. Минусы: при удалении бота чеки теряются. Если нужно — можно добавить выгрузку в Drive (см. раздел 10).
 
 ## 9. Что НЕ входит в MVP
