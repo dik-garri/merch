@@ -14,13 +14,12 @@ function handleMessage(msg) {
 
   var text = (msg.text || '').trim();
 
+  // /cancel and /start always work, even mid-dialog
   if (text === '/start') return cmdStart(chatId);
   if (text === '/cancel') return cmdCancel(chatId);
-  if (text === '/help'  || text === 'ℹ️ Помощь')   return cmdHelp(chatId);
-  if (text === '📦 Каталог')      return cmdCatalog(chatId);
-  if (text === '🛒 Корзина')      return cmdCart(chatId);
-  if (text === '📋 Мои заказы')   return cmdMyOrders(chatId);
 
+  // FSM input takes priority over menu buttons — accidental menu click during
+  // checkout shouldn't drop the dialog
   var state = getState(chatId);
   switch (state.name) {
     case STATES.COLLECTING_NAME:     return collectName(chatId, text);
@@ -28,11 +27,16 @@ function handleMessage(msg) {
     case STATES.COLLECTING_ADDRESS:  return collectAddress(chatId, text);
     case STATES.COLLECTING_COMMENT:  return collectComment(chatId, text);
     case STATES.ADMIN_REJECT_REASON: return collectAdminRejectReason(chatId, text);
-    default:
-      tgSendMessage(chatId, 'Не понял команду. Используйте кнопки меню или /start.', {
-        reply_markup: kbMainMenu()
-      });
   }
+
+  if (text === '/help'  || text === 'ℹ️ Помощь') return cmdHelp(chatId);
+  if (text === '📦 Каталог')    return cmdCatalog(chatId);
+  if (text === '🛒 Корзина')    return cmdCart(chatId);
+  if (text === '📋 Мои заказы') return cmdMyOrders(chatId);
+
+  tgSendMessage(chatId, 'Не понял команду. Используйте кнопки меню или /start.', {
+    reply_markup: kbMainMenu()
+  });
 }
 
 function upsertUser(from) {
@@ -112,7 +116,8 @@ function collectPhone(chatId, text, msg) {
   if (!phone || !/[\d+]/.test(phone)) return tgSendMessage(chatId, 'Укажите корректный номер телефона:');
   patchStateData(chatId, { phone: phone });
   setState(chatId, STATES.COLLECTING_ADDRESS, getState(chatId).data);
-  tgSendMessage(chatId, '🏠 Введите адрес доставки:', { reply_markup: { remove_keyboard: true } });
+  // Restore main menu reply keyboard (was replaced by kbContactRequest)
+  tgSendMessage(chatId, '🏠 Введите адрес доставки:', { reply_markup: kbMainMenu() });
 }
 
 function collectAddress(chatId, text) {
