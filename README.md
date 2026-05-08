@@ -110,6 +110,11 @@ merch/
 
 Автоматизация через [`clasp`](https://github.com/google/clasp): `clasp push` пушит файлы из `src/`, `clasp deploy --deploymentId <id>` обновляет существующий deployment.
 
+## Документация
+
+- [Спека и архитектура](docs/superpowers/specs/2026-05-07-merch-telegram-bot-design.md)
+- [Инструкция для модератора](docs/moderator-guide.md) — как добавлять товары и категории через Google Sheets
+
 ## Структура данных
 
 См. подробности в [спеке](docs/superpowers/specs/2026-05-07-merch-telegram-bot-design.md).
