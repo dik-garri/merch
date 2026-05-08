@@ -53,8 +53,8 @@ function sendProductCard(chatId, product) {
   var blobs = productPhotoBlobs(product);
   if (blobs.length >= 2) {
     tgSendMediaGroup(chatId, blobs, caption);
-    // Album doesn't support inline buttons — send selector as a follow-up message
-    tgSendMessage(chatId, '👆 ' + escapeHtml(product.title), { reply_markup: kbProductCard(product.id) });
+    // Album doesn't support inline buttons — send selector as a short follow-up
+    tgSendMessage(chatId, '👇', { reply_markup: kbProductCard(product.id) });
     return;
   }
   if (blobs.length === 1) {
