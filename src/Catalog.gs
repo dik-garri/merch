@@ -20,7 +20,10 @@ function getProduct(productId) {
 }
 
 function productSizes(product) {
-  return String(product.sizes || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  return String(product.sizes || '')
+    .split(',')
+    .map(function(s) { return s.trim(); })
+    .filter(function(s) { return s && s !== '-'; });
 }
 
 function productPhotoBlob(product) {
