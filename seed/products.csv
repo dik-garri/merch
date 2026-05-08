@@ -1,0 +1,9 @@
+id,category,title,description,sizes,price,drive_file_id,active
+p001,tshirts,Black Oversize,"100% хлопок, плотность 220 г/м²","S,M,L,XL",1500,1aBcDeFgHiJkLmN_REPLACE_ME,TRUE
+p002,tshirts,White Minimal,"Базовая белая, лого на груди","S,M,L,XL",1200,2bCdEfGhIjKlMnO_REPLACE_ME,TRUE
+p003,tshirts,Vintage Print,Винтажный принт на спине,"M,L,XL",1700,3cDeFgHiJkLmNoP_REPLACE_ME,TRUE
+p004,hoodies,Худи Black Classic,"Чёрное худи, 380 г/м², начёс","S,M,L,XL,XXL",3500,4dEfGhIjKlMnOpQ_REPLACE_ME,TRUE
+p005,hoodies,Худи Grey Melange,"Серый меланж, унисекс","M,L,XL",3200,5eFgHiJkLmNoPqR_REPLACE_ME,TRUE
+p006,sweaters,Свитшот Cream,"Кремовый, без капюшона","S,M,L",2400,6fGhIjKlMnOpQrS_REPLACE_ME,TRUE
+p007,shoppers,Шоппер Canvas,"Холщовый шоппер, лого",-,800,7gHiJkLmNoPqRsT_REPLACE_ME,TRUE
+p008,other,Кепка Logo,"Snapback, чёрная",-,1000,8hIjKlMnOpQrStU_REPLACE_ME,FALSE
